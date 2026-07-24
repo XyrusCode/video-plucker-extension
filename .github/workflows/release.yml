@@ -1,0 +1,90 @@
+name: Release Extension
+
+# Releases are driven by the version number: bumping `version` in
+# extension/manifest.json and landing it on main auto-triggers a build and
+# publishes v<version>. The check job makes this idempotent — it only releases
+# when no release for that version exists yet. `workflow_dispatch` allows manual
+# runs to retry a failed release.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - extension/manifest.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      release: ${{ steps.resolve.outputs.release }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version and whether it needs releasing
+        id: resolve
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(jq -r '.version' extension/manifest.json)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if gh release view "v$version" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "Release v$version already exists — nothing to do."
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "New version v$version — building extension."
+          fi
+
+  release:
+    needs: check
+    if: needs.check.outputs.release == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Package extension
+        run: |
+          mkdir -p dist
+          cd extension
+          zip -r ../dist/plucker-extension-v${{ needs.check.outputs.version }}.zip . \
+            -x "*.git*" -x "*.DS_Store"
+
+      - name: Package backend
+        run: |
+          cd backend
+          zip -r ../dist/plucker-backend-v${{ needs.check.outputs.version }}.zip . \
+            -x "venv/*" -x "__pycache__/*" -x "*.pyc" -x ".git/*"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.check.outputs.version }}
+          name: "Xyrus' Plucker v${{ needs.check.outputs.version }}"
+          body: |
+            ## Xyrus' Plucker v${{ needs.check.outputs.version }}
+
+            Download videos from YouTube, X (Twitter), TikTok, and more.
+
+            ### 📦 Extension
+            - `plucker-extension-*.zip` — Load unpacked in Chrome via chrome://extensions
+            - Or publish to the Chrome Web Store from this zip
+
+            ### 🐍 Backend (optional)
+            - `plucker-backend-*.zip` — Python FastAPI server (requires Python 3.8+)
+            - Install: `pip install -r requirements.txt`
+            - Run: `uvicorn main:app --host 0.0.0.0 --port 8000`
+
+            ### 🆕 What's new in this version
+            See the commit history for details.
+          files: dist/*.zip
+          draft: false
+          prerelease: false
