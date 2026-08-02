@@ -9,93 +9,19 @@
   <div id="app">
     <header>
       <h1>Xyrus' Plucker</h1>
-      <span id="status-dot" class="status-offline" title="Backend status"></span>
     </header>
 
+    <p class="description">Send this video to the Xyrus YT Plucker desktop app for download.</p>
+
     <div id="url-section">
-      <input type="text" id="url-input" placeholder="Paste a video URL..." />
-      <button id="fetch-btn">Fetch</button>
+      <input type="text" id="url-input" placeholder="Detecting URL..." readonly />
     </div>
 
-    <div id="loading" class="hidden">
-      <div class="spinner"></div>
-      <p>Fetching video info...</p>
-    </div>
+    <button id="send-btn">
+      <span class="btn-icon">📤</span> Open in Desktop App
+    </button>
 
-    <div id="error" class="hidden">
-      <p id="error-message"></p>
-    </div>
-
-    <div id="video-info" class="hidden">
-      <div id="video-header">
-        <img id="thumbnail" src="" alt="thumbnail" />
-        <div id="meta">
-          <div id="meta-top">
-            <h2 id="video-title"></h2>
-            <span id="source-badge" class="hidden"></span>
-          </div>
-          <p id="video-channel"></p>
-          <p id="video-duration"></p>
-        </div>
-      </div>
-
-      <div id="format-section">
-        <label for="format-select">Quality:</label>
-        <select id="format-select"></select>
-      </div>
-
-      <div id="playlist-section" class="hidden">
-        <h3>Playlist: <span id="playlist-title"></span></h3>
-        <div id="playlist-controls">
-          <label>
-            <input type="checkbox" id="select-all" checked />
-            Select All
-          </label>
-          <span id="selected-count">0 selected</span>
-        </div>
-        <div id="playlist-list"></div>
-        <div id="playlist-mode">
-          <label><input type="radio" name="pl-mode" value="individual" checked /> Individual files</label>
-          <label><input type="radio" name="pl-mode" value="zip" /> Zip archive</label>
-        </div>
-      </div>
-
-      <button id="download-btn">
-        <span class="btn-icon">⬇</span> Pluck It!
-      </button>
-    </div>
-
-    <div id="progress" class="hidden">
-      <div class="progress-bar">
-        <div class="progress-fill"></div>
-      </div>
-      <p id="progress-text">Downloading...</p>
-    </div>
-
-    <div id="cookie-section" class="chrome-section">
-      <div class="cookie-head">
-        <span>Cookies</span>
-        <span class="cookie-head-hint">Import cookies.txt for downloads</span>
-      </div>
-      <div class="cookie-row">
-        <span class="cookie-label">YouTube</span>
-        <button id="cookie-youtube-btn" class="cookie-import-btn">Import</button>
-        <span id="cookie-youtube-status" class="cookie-status not-loaded">Not loaded</span>
-        <button id="cookie-youtube-clear" class="cookie-clear-btn hidden">Clear</button>
-      </div>
-      <div class="cookie-row">
-        <span class="cookie-label">X (Twitter)</span>
-        <button id="cookie-twitter-btn" class="cookie-import-btn">Import</button>
-        <span id="cookie-twitter-status" class="cookie-status not-loaded">Not loaded</span>
-        <button id="cookie-twitter-clear" class="cookie-clear-btn hidden">Clear</button>
-      </div>
-      <div class="cookie-row">
-        <span class="cookie-label">TikTok</span>
-        <button id="cookie-tiktok-btn" class="cookie-import-btn">Import</button>
-        <span id="cookie-tiktok-status" class="cookie-status not-loaded">Not loaded</span>
-        <button id="cookie-tiktok-clear" class="cookie-clear-btn hidden">Clear</button>
-      </div>
-    </div>
+    <p id="status-text"></p>
   </div>
 
   <script src="popup.js"></script>

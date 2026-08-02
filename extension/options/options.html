@@ -8,11 +8,9 @@
     :root {
       --bg-primary: #1a1a2e;
       --bg-secondary: #16213e;
-      --bg-card: #0f3460;
       --accent: #e94560;
       --text-primary: #eaeaea;
       --text-secondary: #a0a0b0;
-      --success: #4ade80;
       --error: #ef4444;
       --border: #2a2a4a;
       --radius: 8px;
@@ -79,49 +77,6 @@
       width: auto;
       accent-color: var(--accent);
     }
-    .cookie-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 24px;
-    }
-    .cookie-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .cookie-row:last-child { margin-bottom: 0; }
-    .cookie-label {
-      width: 100px;
-      flex-shrink: 0;
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-    .cookie-status {
-      font-size: 12px;
-      padding: 3px 8px;
-      border-radius: 4px;
-    }
-    .cookie-status.loaded { color: var(--success); }
-    .cookie-status.not-loaded { color: var(--text-secondary); }
-    .cookie-btn {
-      padding: 6px 14px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .cookie-btn:hover { background: var(--accent); }
-    .cookie-btn.clear {
-      background: transparent;
-      color: var(--error);
-    }
-    .cookie-btn.clear:hover { background: rgba(239, 68, 68, 0.15); }
     #save-btn {
       padding: 12px 32px;
       border: none;
@@ -153,29 +108,11 @@
       border: 1px solid #ef4444;
       color: #ef4444;
     }
-    .test-link {
-      color: var(--accent);
-      font-size: 13px;
-      cursor: pointer;
-      text-decoration: underline;
-      margin-top: 4px;
-      display: inline-block;
-    }
-    .test-link:hover { color: #ff6b81; }
   </style>
 </head>
 <body>
   <h1>Xyrus' Plucker</h1>
-  <p class="subtitle">Download videos from YouTube, X (Twitter), TikTok & more</p>
-
-  <div class="section-title">Connection</div>
-
-  <div class="field">
-    <label for="backend-url">Backend URL</label>
-    <input type="url" id="backend-url" placeholder="http://localhost:8000" />
-    <div class="hint">The address of your running Plucker backend server.</div>
-    <a class="test-link" id="test-connection">Test Connection</a>
-  </div>
+  <p class="subtitle">Downloads are handled by the <a href="https://github.com/XyrusCode/xyrus-yt-plucker/releases" style="color:var(--accent)" target="_blank">Xyrus YT Plucker desktop app</a>. Install it to get started.</p>
 
   <div class="section-title">Downloads</div>
 
@@ -190,7 +127,7 @@
       <option value="opera">Opera</option>
       <option value="vivaldi">Vivaldi</option>
     </select>
-    <div class="hint">Use browser login cookies to get past bot checks on YouTube.</div>
+    <div class="hint">The desktop app will use this browser's login cookies to get past YouTube bot checks. Set in the desktop app's Options as well.</div>
   </div>
 
   <div class="field">
@@ -209,34 +146,8 @@
   <div class="field">
     <label class="checkbox-label">
       <input type="checkbox" id="auto-download" />
-      Auto-download on right-click (skip quality selector)
+      Auto-download on right-click (skip quality selector in desktop app)
     </label>
-  </div>
-
-  <div class="section-title">Cookie Manager</div>
-  <div class="hint" style="margin-bottom:12px">
-    Import cookies.txt files for platforms that require login. Export from your browser using extensions like "Get cookies.txt".
-  </div>
-
-  <div class="cookie-section" id="cookie-manager">
-    <div class="cookie-row">
-      <span class="cookie-label">YouTube</span>
-      <button class="cookie-btn" id="cookie-youtube-btn">Import</button>
-      <span id="cookie-youtube-status" class="cookie-status not-loaded">Not loaded</span>
-      <button class="cookie-btn clear" id="cookie-youtube-clear">Clear</button>
-    </div>
-    <div class="cookie-row">
-      <span class="cookie-label">X (Twitter)</span>
-      <button class="cookie-btn" id="cookie-twitter-btn">Import</button>
-      <span id="cookie-twitter-status" class="cookie-status not-loaded">Not loaded</span>
-      <button class="cookie-btn clear" id="cookie-twitter-clear">Clear</button>
-    </div>
-    <div class="cookie-row">
-      <span class="cookie-label">TikTok</span>
-      <button class="cookie-btn" id="cookie-tiktok-btn">Import</button>
-      <span id="cookie-tiktok-status" class="cookie-status not-loaded">Not loaded</span>
-      <button class="cookie-btn clear" id="cookie-tiktok-clear">Clear</button>
-    </div>
   </div>
 
   <button id="save-btn">Save Settings</button>
