@@ -93,100 +93,94 @@ Remove `http://localhost:8000` from permissions/host_permissions if present.
 
 ## Desktop App Changes
 
-### 1. Add `tauri_plugin_deep_link` to Cargo.toml
+> **⚠️ Implementation note:** We chose **not** to use `tauri-plugin-deep-link`. Instead, we parse `yt-plucker://` URLs from the `argv` parameter already available in the `tauri_plugin_single_instance` callback. This avoids adding a heavy native dependency and works identically — when the browser opens a `yt-plucker://` URL, Windows launches the app with that URL as a command-line argument.
+
+### 1. Cargo.toml — Add urlencoding
 ```toml
-tauri-plugin-deep-link = "2"
+urlencoding = "2"
 ```
+For URL-decoding query parameters. No `url` crate needed — we use simple string splitting.
 
-### 2. Register protocol in tauri.conf.json
-```json
-{
-  "plugins": {
-    "deep-link": {
-      "desktop": {
-        "schemes": ["yt-plucker"]
-      }
-    }
-  }
-}
-```
+### 2. lib.rs — Deep link parsing in single-instance callback
 
-### 3. Handle deep links in lib.rs
-
-The app already uses `tauri_plugin_single_instance`. When a second instance is launched with a `yt-plucker://` URL, the single-instance callback fires with `argv`. Parse the URL there:
+The single-instance callback already receives `argv`. Parse `yt-plucker://` URLs from it:
 
 ```rust
-use url::Url;
+struct DeepLink {
+    action: String,    // "analyze" or "pluck"
+    url: String,       // decoded video URL
+    quality: Option<String>,  // optional format specifier
+}
 
-fn handle_deep_link(app: &AppHandle, url_str: &str) {
-    if let Ok(url) = Url::parse(url_str) {
-        match url.host_str() {
-            Some("analyze") => {
-                // Extract 'url' query param, emit event to frontend
-                // Show main window, populate URL input, auto-analyze
-            }
-            Some("pluck") => {
-                // Extract 'url' and 'quality' params
-                // Show window, start download immediately
-            }
-            _ => {}
-        }
-    }
+fn parse_deep_link(argv: &[String]) -> Option<DeepLink> {
+    let url_str = argv.iter().find(|a| a.starts_with("yt-plucker://"))?;
+    let after_scheme = url_str.strip_prefix("yt-plucker://")?;
+    let (action, query) = after_scheme.split_once('?')?;
+    // Parse url= and quality= from query string, URL-decode each
+    // ...
+}
+
+fn handle_deep_link(app: &AppHandle, dl: &DeepLink) {
+    let _ = app.emit("deep-link", serde_json::json!({
+        "action": dl.action,
+        "url": dl.url,
+        "quality": dl.quality,
+    }));
+    show_main_window(app);
 }
 ```
 
-**Key behaviors:**
-- If the app is in tray (hidden), show and focus the main window
-- If analyzing, populate the URL input and trigger auto-analyze
-- If quick-plucking, start the download immediately with progress UI
-- Deduplicate: ignore duplicate URLs if already analyzing/plucking
+### 3. Windows Registry Registration
 
-### 4. Tauri capabilities update
-Add the deep-link permission in `src-tauri/capabilities/`:
-```json
-{
-  "identifier": "deep-link-default",
-  "windows": ["main"],
-  "permissions": ["deep-link:default"]
+Register `yt-plucker://` in `HKCU\Software\Classes` (per-user, no admin needed) via `reg add` commands on every launch. Idempotent and self-contained — no installer changes needed.
+
+```rust
+#[cfg(target_os = "windows")]
+fn register_protocol_handler() {
+    let exe = std::env::current_exe().unwrap().to_string_lossy().to_string();
+    let open_cmd = format!("\"{}\" \"%1\"", exe);
+    // reg add HKCU\Software\Classes\yt-plucker /ve /d "URL:yt-plucker Protocol" /f
+    // reg add HKCU\Software\Classes\yt-plucker /v "URL Protocol" /d "" /f
+    // reg add HKCU\Software\Classes\yt-plucker\shell\open\command /ve /d "<open_cmd>" /f
 }
 ```
 
-### 5. Windows: Installer must write registry
+Called from `.setup()` so it runs every time the app starts.
 
-For the protocol handler to work on Windows, the installer (NSIS) must register `yt-plucker://` in the registry. Tauri's NSIS bundler typically handles this when `tauri-plugin-deep-link` is configured, but verify:
+### 4. Frontend (src/main.js) — Deep link event listener
 
+```js
+listen("deep-link", ({ payload }) => {
+  showView("download");
+  urlInput.value = payload.url || "";
+
+  if (payload.action === "pluck" && payload.url && payload.quality) {
+    // Auto-download: set quality, analyze, then pluck
+    qualitySelect.value = payload.quality;
+    analyze().then(() => { if (currentMeta) pluckBtn.click(); });
+  } else if (payload.url) {
+    // Analyze mode: show metadata, let user review
+    analyze().catch(() => {});
+  }
+});
 ```
-HKEY_CLASSES_ROOT\yt-plucker
-  (Default) = "URL:yt-plucker Protocol"
-  URL Protocol = ""
-  \shell\open\command
-    (Default) = "C:\Program Files\Xyrus YT Plucker\yt-plucker.exe" "%1"
-```
-
-### 6. Frontend (src/main.js)
-
-Add a listener for the URL being passed from the Rust backend. The Rust side emits an event or calls a JS function when a deep link is received. The frontend should:
-- Populate the URL input field
-- Auto-trigger the "Analyze" button
-- Switch to the appropriate tab (URL tab for analyze, Downloads tab for pluck)
 
 ## Task Breakdown
 
-### Phase 1: Protocol Handler (Desktop App)
-- [ ] Add `tauri-plugin-deep-link` dependency
-- [ ] Register `yt-plucker://` scheme in tauri.conf.json
-- [ ] Implement deep-link parsing in the single-instance callback
-- [ ] Emit parsed URL to frontend via Tauri event
-- [ ] Frontend: handle incoming URL (populate input, auto-analyze)
-- [ ] Verify Windows registry registration in NSIS installer
-- [ ] Test: open `yt-plucker://analyze?url=...` from browser
+### Phase 1: Protocol Handler (Desktop App) ✅
+- [x] Add `urlencoding` dependency (`urlencoding = "2"`) — no `tauri-plugin-deep-link` needed
+- [x] Implement `parse_deep_link()` — string-based URL parsing from single-instance `argv`
+- [x] Implement `handle_deep_link()` — emits `deep-link` Tauri event to frontend
+- [x] Implement `register_protocol_handler()` — Windows registry via `reg add` in `setup()` hook
+- [x] Frontend listener in `src/main.js` — populates URL input, auto-analyzes, auto-plucks
+- [ ] Build and test: open `yt-plucker://analyze?url=...` from browser
 
-### Phase 2: Extension Cleanup (Extension)
-- [ ] Replace backend API calls with protocol URL launches in `background.js`
-- [ ] Simplify or remove popup (quality selection moves to desktop)
-- [ ] Remove backend URL from options page
-- [ ] Remove backend-related permissions from manifest
-- [ ] Delete `backend/` directory
+### Phase 2: Extension Cleanup (Extension) ✅
+- [x] Replace backend API calls with protocol URL launches in `background.js`
+- [x] Simplify popup to minimal URL launcher (34 lines vs 353)
+- [x] Remove backend URL from options page
+- [x] Remove backend-related permissions and test-connection from options
+- [x] Delete `backend/` directory
 - [ ] Test: context menu "Pluck This Video" → desktop app opens with URL loaded
 
 ### Phase 3: Polish
