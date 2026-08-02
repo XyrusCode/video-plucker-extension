@@ -15,7 +15,12 @@ function buildPluckerUrl(action, url, quality) {
 
 function launchDesktopApp(action, url, quality) {
   const pluckerUrl = buildPluckerUrl(action, url, quality);
-  chrome.tabs.create({ url: pluckerUrl, active: false }, (tab) => {
+  // chrome.tabs.create with custom schemes is unreliable — use a data: URL
+  // redirect so the protocol navigation is page-initiated, not API-initiated.
+  const html = `<html><body><script>location.href='${pluckerUrl.replace(/'/g, "\\'")}';</script></body></html>`;
+  const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
+
+  chrome.tabs.create({ url: dataUrl, active: false }, (tab) => {
     if (chrome.runtime.lastError) {
       chrome.notifications.create({
         type: 'basic',
@@ -28,7 +33,10 @@ function launchDesktopApp(action, url, quality) {
         });
       });
     } else {
-      setTimeout(() => chrome.tabs.remove(tab.id), 1500);
+      // Give the redirect time to fire, then clean up
+      setTimeout(() => {
+        chrome.tabs.remove(tab.id).catch(() => {});
+      }, 2000);
     }
   });
 }
