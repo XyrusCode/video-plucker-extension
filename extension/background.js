@@ -34,20 +34,18 @@ function launchDesktopApp(action, url, quality) {
 }
 
 chrome.runtime.onInstalled.addListener(() => {
-  for (const pattern of SITE_PATTERNS) {
-    chrome.contextMenus.create({
-      id: 'pluck-video',
-      title: 'Pluck This Video',
-      contexts: ['link', 'page'],
-      documentUrlPatterns: [pattern],
-    });
-    chrome.contextMenus.create({
-      id: 'pluck-playlist',
-      title: 'Pluck This Playlist',
-      contexts: ['link', 'page'],
-      documentUrlPatterns: [pattern],
-    });
-  }
+  chrome.contextMenus.create({
+    id: 'pluck-video',
+    title: 'Pluck This Video',
+    contexts: ['link', 'page'],
+    documentUrlPatterns: SITE_PATTERNS,
+  });
+  chrome.contextMenus.create({
+    id: 'pluck-playlist',
+    title: 'Pluck This Playlist',
+    contexts: ['link', 'page'],
+    documentUrlPatterns: SITE_PATTERNS,
+  });
 });
 
 chrome.contextMenus.onClicked.addListener((info) => {

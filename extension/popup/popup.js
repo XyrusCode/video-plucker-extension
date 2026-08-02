@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('version').textContent = `v${chrome.runtime.getManifest().version}`;
+
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     const urlInput = document.getElementById('url-input');

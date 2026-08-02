@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('version').textContent = `v${chrome.runtime.getManifest().version}`;
+
   chrome.storage.sync.get(
     ['defaultQuality', 'autoDownload', 'cookiesFromBrowser'],
     (data) => {
