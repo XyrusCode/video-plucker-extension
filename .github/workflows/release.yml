@@ -58,12 +58,6 @@ jobs:
           zip -r ../dist/plucker-extension-v${{ needs.check.outputs.version }}.zip . \
             -x "*.git*" -x "*.DS_Store"
 
-      - name: Package backend
-        run: |
-          cd backend
-          zip -r ../dist/plucker-backend-v${{ needs.check.outputs.version }}.zip . \
-            -x "venv/*" -x "__pycache__/*" -x "*.pyc" -x ".git/*"
-
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
@@ -76,12 +70,7 @@ jobs:
 
             ### 📦 Extension
             - `plucker-extension-*.zip` — Load unpacked in Chrome via chrome://extensions
-            - Or publish to the Chrome Web Store from this zip
-
-            ### 🐍 Backend (optional)
-            - `plucker-backend-*.zip` — Python FastAPI server (requires Python 3.8+)
-            - Install: `pip install -r requirements.txt`
-            - Run: `uvicorn main:app --host 0.0.0.0 --port 8000`
+            - Requires the [Xyrus YT Plucker desktop app](https://github.com/XyrusCode/Xyrus-YT-Plucker-Desktop/releases)
 
             ### 🆕 What's new in this version
             See the commit history for details.

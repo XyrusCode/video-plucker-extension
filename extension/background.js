@@ -33,7 +33,9 @@ function launchDesktopApp(action, url, quality) {
   });
 }
 
-chrome.runtime.onInstalled.addListener(() => {
+// Remove stale context menus from previous versions, then re-create.
+// Called at service-worker startup (not just onInstalled) so reloads pick up changes.
+chrome.contextMenus.removeAll(() => {
   chrome.contextMenus.create({
     id: 'pluck-video',
     title: 'Pluck This Video',
