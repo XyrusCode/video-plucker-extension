@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Video Plucker",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Video Plucker — send videos from YouTube, X (Twitter), TikTok and more to the desktop app.",
   "permissions": [
     "alarms",

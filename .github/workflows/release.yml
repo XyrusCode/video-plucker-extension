@@ -81,7 +81,7 @@ jobs:
           prerelease: false
 
   mirror:
-    needs: release
+    needs: [release, check]
     runs-on: ubuntu-latest
     steps:
       - name: Download release assets
