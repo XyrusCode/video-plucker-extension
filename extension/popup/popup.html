@@ -8,7 +8,7 @@
 <body>
   <div id="app">
     <header>
-      <h1>Xyrus' Plucker</h1>
+      <h1>Video Plucker</h1>
       <span id="status-dot" class="status-offline" title="Backend status"></span>
     </header>
 
@@ -94,6 +94,20 @@
         <button id="cookie-tiktok-btn" class="cookie-import-btn">Import</button>
         <span id="cookie-tiktok-status" class="cookie-status not-loaded">Not loaded</span>
         <button id="cookie-tiktok-clear" class="cookie-clear-btn hidden">Clear</button>
+      </div>
+    </div>
+
+    <div id="terms-reminder" class="chrome-section hidden">
+      <div class="reminder-row">
+        <span class="reminder-icon">📄</span>
+        <span>Please review and accept the <a href="#" id="terms-link">Terms of Use</a>.</span>
+      </div>
+    </div>
+
+    <div id="update-indicator" class="chrome-section hidden">
+      <div class="reminder-row">
+        <span class="reminder-icon">🔄</span>
+        <span>Update available: <a href="#" id="update-link">v<span id="update-version"></span></a></span>
       </div>
     </div>
   </div>

@@ -4,7 +4,7 @@ let backendUrl = DEFAULT_BACKEND;
 
 document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.sync.get(
-    ['backendUrl', 'defaultQuality', 'autoDownload', 'cookiesFromBrowser'],
+    ['backendUrl', 'defaultQuality', 'autoDownload', 'cookiesFromBrowser', 'autoUpdate'],
     (data) => {
       backendUrl = data.backendUrl || DEFAULT_BACKEND;
       document.getElementById('backend-url').value = backendUrl;
@@ -14,11 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
         data.autoDownload || false;
       document.getElementById('cookies-from-browser').value =
         data.cookiesFromBrowser || 'none';
+      document.getElementById('auto-update').checked =
+        data.autoUpdate !== false;
     }
   );
 
   document.getElementById('save-btn').addEventListener('click', saveSettings);
   document.getElementById('test-connection').addEventListener('click', testConnection);
+  document.getElementById('check-updates-btn').addEventListener('click', checkForUpdates);
 
   for (const p of PLATFORMS) {
     document.getElementById(`cookie-${p}-btn`).addEventListener('click', () => importCookies(p));
@@ -33,9 +36,10 @@ function saveSettings() {
   const defaultQuality = document.getElementById('default-quality').value;
   const autoDownload = document.getElementById('auto-download').checked;
   const cookiesFromBrowser = document.getElementById('cookies-from-browser').value;
+  const autoUpdate = document.getElementById('auto-update').checked;
 
   chrome.storage.sync.set(
-    { backendUrl, defaultQuality, autoDownload, cookiesFromBrowser },
+    { backendUrl, defaultQuality, autoDownload, cookiesFromBrowser, autoUpdate },
     () => {
       showStatus('Settings saved!', 'success');
     }
@@ -125,4 +129,38 @@ async function clearCookies(platform) {
   } catch (err) {
     showStatus(`Failed to clear: ${err}`, 'error');
   }
+}
+
+function checkForUpdates() {
+  const btn = document.getElementById('check-updates-btn');
+  const statusEl = document.getElementById('update-status');
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+  statusEl.textContent = '';
+  statusEl.className = 'update-status';
+
+  chrome.runtime.sendMessage({ action: 'checkForUpdates' }, (res) => {
+    btn.disabled = false;
+    btn.textContent = 'Check for Updates Now';
+
+    if (!res) {
+      statusEl.textContent = 'Could not reach background service.';
+      statusEl.className = 'update-status error';
+      return;
+    }
+
+    if (res.error) {
+      statusEl.textContent = res.error;
+      statusEl.className = 'update-status error';
+    } else if (res.reason === 'cooldown') {
+      statusEl.textContent = 'Already checked today. Try again later.';
+      statusEl.className = 'update-status';
+    } else if (res.updateAvailable) {
+      statusEl.textContent = `v${res.version} available! Check chrome://extensions to reload.`;
+      statusEl.className = 'update-status success';
+    } else {
+      statusEl.textContent = 'You are on the latest version.';
+      statusEl.className = 'update-status success';
+    }
+  });
 }

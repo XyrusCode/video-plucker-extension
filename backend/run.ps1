@@ -1,4 +1,4 @@
-# Start the Xyrus' Youtube Plucker backend server
+# Start the Video Plucker backend server
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
@@ -12,5 +12,5 @@ if (-not (Test-Path "venv")) {
     .\venv\Scripts\Activate.ps1
 }
 
-Write-Host "Starting Xyrus' Youtube Plucker API on http://localhost:8000"
+Write-Host "Starting Video Plucker API on http://localhost:8000"
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload

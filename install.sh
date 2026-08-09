@@ -2,7 +2,7 @@
 set -e
 
 echo "==========================================="
-echo "  Xyrus' Youtube Plucker - Setup"
+echo "  Video Plucker - Setup"
 echo "==========================================="
 echo ""
 

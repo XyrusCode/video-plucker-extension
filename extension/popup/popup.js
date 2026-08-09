@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshCookieStatus();
   });
 
+  checkTermsAccepted();
+  checkUpdateStatus();
+
   document.getElementById('fetch-btn').addEventListener('click', handleFetch);
   document.getElementById('url-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleFetch();
@@ -349,4 +352,39 @@ async function clearCookies(platform) {
   } catch (err) {
     showError(`Failed to clear cookies: ${err}`);
   }
+}
+
+// ── Terms & Update ───────────────────────────────────────────────────
+
+function checkTermsAccepted() {
+  chrome.storage.local.get('terms_accepted', (data) => {
+    if (!data.terms_accepted) {
+      document.getElementById('terms-reminder').classList.remove('hidden');
+    }
+  });
+
+  document.getElementById('terms-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    chrome.runtime.sendMessage({ action: 'openTerms' });
+  });
+}
+
+function checkUpdateStatus() {
+  chrome.runtime.sendMessage({ action: 'getUpdateStatus' }, (res) => {
+    if (res && res.updateAvailable) {
+      document.getElementById('update-indicator').classList.remove('hidden');
+      document.getElementById('update-version').textContent = res.updateVersion || '';
+    }
+  });
+
+  document.getElementById('update-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    chrome.storage.local.get('updateUrl', (data) => {
+      if (data.updateUrl) {
+        chrome.tabs.create({ url: data.updateUrl });
+      } else {
+        chrome.tabs.create({ url: 'https://github.com/XyrusCode/video-plucker-extension/releases/latest' });
+      }
+    });
+  });
 }

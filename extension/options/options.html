@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xyrus' Plucker - Options</title>
+  <title>Video Plucker - Options</title>
   <style>
     :root {
       --bg-primary: #1a1a2e;
@@ -162,10 +162,29 @@
       display: inline-block;
     }
     .test-link:hover { color: #ff6b81; }
+    .secondary-btn {
+      padding: 10px 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .secondary-btn:hover { background: var(--bg-card); }
+    .update-status {
+      margin-left: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .update-status.success { color: var(--success); }
+    .update-status.error { color: var(--error); }
   </style>
 </head>
 <body>
-  <h1>Xyrus' Plucker</h1>
+  <h1>Video Plucker</h1>
   <p class="subtitle">Download videos from YouTube, X (Twitter), TikTok & more</p>
 
   <div class="section-title">Connection</div>
@@ -173,7 +192,7 @@
   <div class="field">
     <label for="backend-url">Backend URL</label>
     <input type="url" id="backend-url" placeholder="http://localhost:8000" />
-    <div class="hint">The address of your running Plucker backend server.</div>
+    <div class="hint">The address of your running Video Plucker backend server.</div>
     <a class="test-link" id="test-connection">Test Connection</a>
   </div>
 
@@ -211,6 +230,21 @@
       <input type="checkbox" id="auto-download" />
       Auto-download on right-click (skip quality selector)
     </label>
+  </div>
+
+  <div class="section-title">Updates</div>
+
+  <div class="field">
+    <label class="checkbox-label">
+      <input type="checkbox" id="auto-update" checked />
+      Check for updates automatically
+    </label>
+    <div class="hint">Checks GitHub Releases daily for new versions. Since this extension is side-loaded, updates must be installed manually.</div>
+  </div>
+
+  <div class="field">
+    <button id="check-updates-btn" class="secondary-btn">Check for Updates Now</button>
+    <span id="update-status" class="update-status"></span>
   </div>
 
   <div class="section-title">Cookie Manager</div>

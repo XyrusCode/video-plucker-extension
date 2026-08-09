@@ -1,5 +1,5 @@
 Write-Host "==========================================="
-Write-Host "  Xyrus' Youtube Plucker - Setup"
+Write-Host "  Video Plucker - Setup"
 Write-Host "==========================================="
 Write-Host ""
 

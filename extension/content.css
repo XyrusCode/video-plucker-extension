@@ -1,4 +1,4 @@
-#xyrus-plucker-btn {
+#video-plucker-btn {
   position: fixed;
   bottom: 24px;
   right: 24px;
@@ -18,18 +18,18 @@
   line-height: 1;
 }
 
-#xyrus-plucker-btn:hover {
+#video-plucker-btn:hover {
   background: #ff6b81;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
 }
 
-#xyrus-plucker-btn:active {
+#video-plucker-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(233, 69, 96, 0.3);
 }
 
-#xyrus-plucker-toast {
+#video-plucker-toast {
   position: fixed;
   bottom: 80px;
   right: 24px;
@@ -42,11 +42,11 @@
   font-size: 14px;
   font-weight: 500;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  animation: xyrus-fade-in 0.3s ease;
+  animation: video-plucker-fade-in 0.3s ease;
   border: 1px solid #e94560;
 }
 
-@keyframes xyrus-fade-in {
+@keyframes video-plucker-fade-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }

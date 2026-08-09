@@ -1,4 +1,4 @@
-# Xyrus' Plucker
+# Video Plucker
 
 A Chrome extension for downloading videos from **YouTube**, **X (Twitter)**, **TikTok**, and more — backed by `yt-dlp`.
 
@@ -47,4 +47,4 @@ Bump `version` in `extension/manifest.json`, push to `main` — the [release wor
 
 - **Extension**: Chrome MV3 (vanilla JS)
 - **Backend**: Python FastAPI + `yt-dlp` + `ffmpeg`
-- **Desktop companion**: [Tauri/Rust app](https://github.com/XyrusCode/Xyrus-YT-Plucker-Desktop)
+- **Desktop companion**: [Tauri/Rust app](https://github.com/XyrusCode/video-plucker-desktop)
