@@ -48,7 +48,7 @@ header h1 {
   letter-spacing: 0.3px;
 }
 
-#status-dot {
+#desktop-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -92,7 +92,7 @@ header h1 {
   border-color: var(--accent);
 }
 
-#fetch-btn {
+#send-btn {
   padding: 10px 16px;
   border: none;
   border-radius: var(--radius);
@@ -102,15 +102,46 @@ header h1 {
   font-size: 13px;
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 
-#fetch-btn:hover {
+#send-btn:hover {
   background: var(--accent-hover);
 }
 
-#fetch-btn:disabled {
+#send-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+#send-status {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  text-align: center;
+}
+
+#send-status.success {
+  color: var(--success);
+}
+
+.info-section {
+  margin-bottom: 12px;
+}
+
+.info-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.info-text a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.info-text a:hover {
+  color: var(--accent-hover);
 }
 
 #loading {

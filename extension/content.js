@@ -14,7 +14,7 @@
   const btn = document.createElement('button');
   btn.id = 'video-plucker-btn';
   btn.innerHTML = '🪶 Pluck';
-  btn.title = 'Download this video with Video Plucker';
+  btn.title = 'Send this video to Video Plucker desktop app';
 
   btn.addEventListener('click', () => {
     const isPlaylist =
@@ -27,7 +27,7 @@
       () => {
         const toast = document.createElement('div');
         toast.id = 'video-plucker-toast';
-        toast.textContent = 'Ready! Click the Video Plucker extension icon.';
+        toast.textContent = 'Ready! Click the Video Plucker icon to send to desktop app.';
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
       }

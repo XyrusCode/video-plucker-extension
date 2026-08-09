@@ -1,4 +1,6 @@
-const DEFAULT_BACKEND = 'http://localhost:8000';
+﻿const DESKTOP_PAIRING_URL = 'http://localhost:19877';
+
+let desktopAvailable = false;
 
 const SITE_PATTERNS = [
   '*://*.youtube.com/*',
@@ -7,19 +9,29 @@ const SITE_PATTERNS = [
   '*://*.tiktok.com/*',
 ];
 
-const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+// ── Desktop health polling ──────────────────────────────────────────
+
+async function checkDesktopApp() {
+  try {
+    const res = await fetch(`${DESKTOP_PAIRING_URL}/health`, { signal: AbortSignal.timeout(2000) });
+    desktopAvailable = res.ok;
+  } catch {
+    desktopAvailable = false;
+  }
+}
+
+checkDesktopApp();
+setInterval(checkDesktopApp, 30000);
+
+// ── Context menus ───────────────────────────────────────────────────
 
 chrome.runtime.onInstalled.addListener(() => {
   for (const pattern of SITE_PATTERNS) {
     chrome.contextMenus.create({
-      id: 'pluck-video',
-      title: 'Pluck This Video',
-      contexts: ['link', 'page'],
-      documentUrlPatterns: [pattern],
-    });
-    chrome.contextMenus.create({
-      id: 'pluck-playlist',
-      title: 'Pluck This Playlist',
+      id: 'send-to-desktop',
+      title: 'Send to Video Plucker',
       contexts: ['link', 'page'],
       documentUrlPatterns: [pattern],
     });
@@ -34,60 +46,24 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.contextMenus.onClicked.addListener((info) => {
   const url = info.linkUrl || info.pageUrl;
-  const isPlaylist =
-    info.menuItemId === 'pluck-playlist' ||
-    url.includes('playlist') ||
-    url.includes('&list=');
-
-  chrome.storage.sync.get(['autoDownload', 'defaultQuality', 'backendUrl', 'cookiesFromBrowser'], (data) => {
-    if (data.autoDownload) {
-      const backendUrl = data.backendUrl || DEFAULT_BACKEND;
-      const formatId = data.defaultQuality || 'best[height<=1080]';
-      const params = new URLSearchParams({ url, format_id: formatId });
-      if (data.cookiesFromBrowser && data.cookiesFromBrowser !== 'none') {
-        params.set('cookies_from_browser', data.cookiesFromBrowser);
-      }
-      const dlUrl = `${backendUrl}/api/download?${params}`;
-      chrome.downloads.download({ url: dlUrl, saveAs: true });
-    } else {
-      chrome.storage.local.set(
-        { pluckContextUrl: url, pluckContextIsPlaylist: isPlaylist },
-        () => {
-          chrome.notifications.create({
-            type: 'basic',
-            iconUrl: 'icons/icon48.png',
-            title: 'Ready to Pluck!',
-            message: 'Click the Video Plucker icon to choose your quality.',
-          });
-        }
-      );
-    }
-  });
+  sendToDesktop(url);
 });
 
+// ── Message handlers ────────────────────────────────────────────────
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'getBackendUrl') {
-    chrome.storage.sync.get('backendUrl', (data) => {
-      sendResponse({ backendUrl: data.backendUrl || DEFAULT_BACKEND });
-    });
+  if (message.action === 'getDesktopStatus') {
+    sendResponse({ available: desktopAvailable });
     return true;
   }
 
-  if (message.action === 'triggerDownload') {
-    chrome.storage.sync.get(['backendUrl', 'cookiesFromBrowser'], (data) => {
-      const backendUrl = data.backendUrl || DEFAULT_BACKEND;
-      const params = new URLSearchParams({ url: message.url, format_id: message.formatId });
-      if (data.cookiesFromBrowser && data.cookiesFromBrowser !== 'none') {
-        params.set('cookies_from_browser', data.cookiesFromBrowser);
-      }
-      const dlUrl = `${backendUrl}/api/download?${params}`;
-      chrome.downloads.download({ url: dlUrl, saveAs: true });
-    });
+  if (message.action === 'sendToDesktop') {
+    sendToDesktop(message.url).then(() => sendResponse({ ok: true }));
     return true;
   }
 
   if (message.action === 'getSettings') {
-    chrome.storage.sync.get(['backendUrl', 'defaultQuality', 'autoDownload', 'cookiesFromBrowser'], (data) => {
+    chrome.storage.sync.get(['autoUpdate'], (data) => {
       sendResponse(data);
     });
     return true;
@@ -119,13 +95,37 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// ── Self-Update Checker ──────────────────────────────────────────────
+// ── Desktop pairing ─────────────────────────────────────────────────
+
+async function sendToDesktop(url) {
+  try {
+    await fetch(`${DESKTOP_PAIRING_URL}/pair`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon48.png',
+      title: 'Sent to Desktop',
+      message: 'URL sent to Video Plucker desktop app.',
+    });
+  } catch {
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon48.png',
+      title: 'Desktop App Not Found',
+      message: 'Make sure Video Plucker desktop app is running.',
+    });
+  }
+}
+
+// ── Self-update checker ─────────────────────────────────────────────
 
 async function checkForUpdates() {
   const now = Date.now();
 
   try {
-    // Check cooldown (once per day)
     const data = await chrome.storage.local.get(['lastUpdateCheck']);
     if (data.lastUpdateCheck && (now - data.lastUpdateCheck) < UPDATE_CHECK_INTERVAL_MS) {
       return { checked: false, reason: 'cooldown' };
@@ -142,7 +142,6 @@ async function checkForUpdates() {
 
     const release = await res.json();
     const tagName = release.tag_name || '';
-    // Strip leading 'v' if present
     const latestVersion = tagName.replace(/^v/, '');
     const releaseUrl = release.html_url || 'https://github.com/XyrusCode/video-plucker-extension/releases/latest';
 
@@ -159,7 +158,7 @@ async function checkForUpdates() {
         type: 'basic',
         iconUrl: 'icons/icon48.png',
         title: 'Update Available',
-        message: `Video Plucker v${latestVersion} is available. Since this extension is side-loaded, download the new version from the GitHub Releases page and reload it in chrome://extensions.`,
+        message: `Video Plucker v${latestVersion} is available. Download the new version from the GitHub Releases page and reload it in chrome://extensions.`,
         priority: 2,
       });
 
@@ -177,16 +176,13 @@ function compareVersions(a, b) {
   const aParts = a.split('.').map(Number);
   const bParts = b.split('.').map(Number);
   for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
-    const av = aParts[i] || 0;
-    const bv = bParts[i] || 0;
-    if (av > bv) return 1;
-    if (av < bv) return -1;
+    if ((aParts[i] || 0) > (bParts[i] || 0)) return 1;
+    if ((aParts[i] || 0) < (bParts[i] || 0)) return -1;
   }
   return 0;
 }
 
-// Set up periodic update checks via alarm
-chrome.alarms.create('updateCheck', { periodInMinutes: 1440 }); // daily
+chrome.alarms.create('updateCheck', { periodInMinutes: 1440 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'updateCheck') {
@@ -198,7 +194,6 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-// Handle notification clicks — open the release page
 chrome.notifications.onClicked.addListener((notificationId) => {
   if (notificationId === 'update-available') {
     chrome.storage.local.get('updateUrl', (data) => {

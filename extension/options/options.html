@@ -1,280 +1,43 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Plucker - Options</title>
-  <style>
-    :root {
-      --bg-primary: #1a1a2e;
-      --bg-secondary: #16213e;
-      --bg-card: #0f3460;
-      --accent: #e94560;
-      --text-primary: #eaeaea;
-      --text-secondary: #a0a0b0;
-      --success: #4ade80;
-      --error: #ef4444;
-      --border: #2a2a4a;
-      --radius: 8px;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      padding: 40px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    h1 {
-      font-size: 22px;
-      color: var(--accent);
-      margin-bottom: 6px;
-    }
-    .subtitle {
-      color: var(--text-secondary);
-      font-size: 14px;
-      margin-bottom: 32px;
-    }
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-    }
-    .field { margin-bottom: 24px; }
-    label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--text-secondary);
-    }
-    input, select {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input:focus, select:focus { border-color: var(--accent); }
-    .hint {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-    .checkbox-label input[type="checkbox"] {
-      width: auto;
-      accent-color: var(--accent);
-    }
-    .cookie-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 24px;
-    }
-    .cookie-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .cookie-row:last-child { margin-bottom: 0; }
-    .cookie-label {
-      width: 100px;
-      flex-shrink: 0;
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-    .cookie-status {
-      font-size: 12px;
-      padding: 3px 8px;
-      border-radius: 4px;
-    }
-    .cookie-status.loaded { color: var(--success); }
-    .cookie-status.not-loaded { color: var(--text-secondary); }
-    .cookie-btn {
-      padding: 6px 14px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .cookie-btn:hover { background: var(--accent); }
-    .cookie-btn.clear {
-      background: transparent;
-      color: var(--error);
-    }
-    .cookie-btn.clear:hover { background: rgba(239, 68, 68, 0.15); }
-    #save-btn {
-      padding: 12px 32px;
-      border: none;
-      border-radius: var(--radius);
-      background: var(--accent);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    #save-btn:hover { background: #ff6b81; }
-    #status {
-      margin-top: 16px;
-      padding: 10px 16px;
-      border-radius: var(--radius);
-      font-size: 14px;
-      display: none;
-    }
-    #status.success {
-      display: block;
-      background: rgba(74, 222, 128, 0.1);
-      border: 1px solid #4ade80;
-      color: #4ade80;
-    }
-    #status.error {
-      display: block;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid #ef4444;
-      color: #ef4444;
-    }
-    .test-link {
-      color: var(--accent);
-      font-size: 13px;
-      cursor: pointer;
-      text-decoration: underline;
-      margin-top: 4px;
-      display: inline-block;
-    }
-    .test-link:hover { color: #ff6b81; }
-    .secondary-btn {
-      padding: 10px 24px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .secondary-btn:hover { background: var(--bg-card); }
-    .update-status {
-      margin-left: 12px;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-    .update-status.success { color: var(--success); }
-    .update-status.error { color: var(--error); }
-  </style>
+  <link rel="stylesheet" href="options.css">
 </head>
 <body>
-  <h1>Video Plucker</h1>
-  <p class="subtitle">Download videos from YouTube, X (Twitter), TikTok & more</p>
+  <div id="app">
+    <header>
+      <h1>Video Plucker</h1>
+      <p class="subtitle">Chrome Extension — Settings</p>
+    </header>
 
-  <div class="section-title">Connection</div>
+    <section class="card" id="updates-section">
+      <h2>Updates</h2>
+      <div class="setting-row">
+        <label class="toggle-label">
+          <input type="checkbox" id="auto-update" checked />
+          Automatically check for updates
+        </label>
+      </div>
+      <div class="setting-row">
+        <button id="check-now-btn">Check Now</button>
+      </div>
+    </section>
 
-  <div class="field">
-    <label for="backend-url">Backend URL</label>
-    <input type="url" id="backend-url" placeholder="http://localhost:8000" />
-    <div class="hint">The address of your running Video Plucker backend server.</div>
-    <a class="test-link" id="test-connection">Test Connection</a>
+    <section class="card" id="about-section">
+      <h2>About</h2>
+      <p>Video Plucker sends video URLs from your browser to the desktop app, which handles downloading via yt-dlp.</p>
+      <p>This extension requires the <strong>Video Plucker Desktop</strong> app to be running.</p>
+      <p class="links">
+        <a href="https://github.com/XyrusCode/video-plucker/releases/latest" target="_blank">Desktop App Downloads</a>
+        &bull;
+        <a href="https://github.com/XyrusCode/video-plucker-extension/releases/latest" target="_blank">Extension Releases</a>
+      </p>
+    </section>
+
+    <p id="status" class="status"></p>
   </div>
-
-  <div class="section-title">Downloads</div>
-
-  <div class="field">
-    <label for="cookies-from-browser">Cookies from browser</label>
-    <select id="cookies-from-browser">
-      <option value="none">None</option>
-      <option value="chrome">Chrome</option>
-      <option value="edge">Edge</option>
-      <option value="firefox">Firefox</option>
-      <option value="brave">Brave</option>
-      <option value="opera">Opera</option>
-      <option value="vivaldi">Vivaldi</option>
-    </select>
-    <div class="hint">Use browser login cookies to get past bot checks on YouTube.</div>
-  </div>
-
-  <div class="field">
-    <label for="default-quality">Default Quality</label>
-    <select id="default-quality">
-      <option value="bestvideo+bestaudio/best">Best Quality</option>
-      <option value="best[height<=2160]">4K (2160p)</option>
-      <option value="best[height<=1080]">1080p Full HD</option>
-      <option value="best[height<=720]">720p HD</option>
-      <option value="best[height<=480]">480p</option>
-      <option value="best[height<=360]">360p</option>
-      <option value="bestaudio/best">Audio Only</option>
-    </select>
-  </div>
-
-  <div class="field">
-    <label class="checkbox-label">
-      <input type="checkbox" id="auto-download" />
-      Auto-download on right-click (skip quality selector)
-    </label>
-  </div>
-
-  <div class="section-title">Updates</div>
-
-  <div class="field">
-    <label class="checkbox-label">
-      <input type="checkbox" id="auto-update" checked />
-      Check for updates automatically
-    </label>
-    <div class="hint">Checks GitHub Releases daily for new versions. Since this extension is side-loaded, updates must be installed manually.</div>
-  </div>
-
-  <div class="field">
-    <button id="check-updates-btn" class="secondary-btn">Check for Updates Now</button>
-    <span id="update-status" class="update-status"></span>
-  </div>
-
-  <div class="section-title">Cookie Manager</div>
-  <div class="hint" style="margin-bottom:12px">
-    Import cookies.txt files for platforms that require login. Export from your browser using extensions like "Get cookies.txt".
-  </div>
-
-  <div class="cookie-section" id="cookie-manager">
-    <div class="cookie-row">
-      <span class="cookie-label">YouTube</span>
-      <button class="cookie-btn" id="cookie-youtube-btn">Import</button>
-      <span id="cookie-youtube-status" class="cookie-status not-loaded">Not loaded</span>
-      <button class="cookie-btn clear" id="cookie-youtube-clear">Clear</button>
-    </div>
-    <div class="cookie-row">
-      <span class="cookie-label">X (Twitter)</span>
-      <button class="cookie-btn" id="cookie-twitter-btn">Import</button>
-      <span id="cookie-twitter-status" class="cookie-status not-loaded">Not loaded</span>
-      <button class="cookie-btn clear" id="cookie-twitter-clear">Clear</button>
-    </div>
-    <div class="cookie-row">
-      <span class="cookie-label">TikTok</span>
-      <button class="cookie-btn" id="cookie-tiktok-btn">Import</button>
-      <span id="cookie-tiktok-status" class="cookie-status not-loaded">Not loaded</span>
-      <button class="cookie-btn clear" id="cookie-tiktok-clear">Clear</button>
-    </div>
-  </div>
-
-  <button id="save-btn">Save Settings</button>
-  <div id="status"></div>
 
   <script src="options.js"></script>
 </body>

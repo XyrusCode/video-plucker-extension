@@ -1,166 +1,49 @@
-const DEFAULT_BACKEND = 'http://localhost:8000';
-const PLATFORMS = ['youtube', 'twitter', 'tiktok'];
-let backendUrl = DEFAULT_BACKEND;
+﻿document.addEventListener('DOMContentLoaded', loadSettings);
 
-document.addEventListener('DOMContentLoaded', () => {
-  chrome.storage.sync.get(
-    ['backendUrl', 'defaultQuality', 'autoDownload', 'cookiesFromBrowser', 'autoUpdate'],
-    (data) => {
-      backendUrl = data.backendUrl || DEFAULT_BACKEND;
-      document.getElementById('backend-url').value = backendUrl;
-      document.getElementById('default-quality').value =
-        data.defaultQuality || 'best[height<=1080]';
-      document.getElementById('auto-download').checked =
-        data.autoDownload || false;
-      document.getElementById('cookies-from-browser').value =
-        data.cookiesFromBrowser || 'none';
-      document.getElementById('auto-update').checked =
-        data.autoUpdate !== false;
-    }
-  );
+function loadSettings() {
+  chrome.storage.sync.get(['autoUpdate'], (data) => {
+    document.getElementById('auto-update').checked = data.autoUpdate !== false;
+  });
+}
 
-  document.getElementById('save-btn').addEventListener('click', saveSettings);
-  document.getElementById('test-connection').addEventListener('click', testConnection);
-  document.getElementById('check-updates-btn').addEventListener('click', checkForUpdates);
-
-  for (const p of PLATFORMS) {
-    document.getElementById(`cookie-${p}-btn`).addEventListener('click', () => importCookies(p));
-    document.getElementById(`cookie-${p}-clear`).addEventListener('click', () => clearCookies(p));
-  }
-
-  refreshCookieStatus();
+document.getElementById('auto-update').addEventListener('change', (e) => {
+  chrome.storage.sync.set({ autoUpdate: e.target.checked });
+  showStatus('Settings saved.');
 });
 
-function saveSettings() {
-  backendUrl = document.getElementById('backend-url').value.trim();
-  const defaultQuality = document.getElementById('default-quality').value;
-  const autoDownload = document.getElementById('auto-download').checked;
-  const cookiesFromBrowser = document.getElementById('cookies-from-browser').value;
+document.getElementById('save-btn').addEventListener('click', () => {
   const autoUpdate = document.getElementById('auto-update').checked;
-
-  chrome.storage.sync.set(
-    { backendUrl, defaultQuality, autoDownload, cookiesFromBrowser, autoUpdate },
-    () => {
-      showStatus('Settings saved!', 'success');
-    }
-  );
-}
-
-async function testConnection() {
-  const url = document.getElementById('backend-url').value.trim();
-  try {
-    const res = await fetch(`${url}/api/health`);
-    if (res.ok) {
-      showStatus('Connection successful! Backend is running.', 'success');
-    } else {
-      showStatus('Backend responded with an error.', 'error');
-    }
-  } catch {
-    showStatus('Could not reach backend. Make sure the server is running.', 'error');
-  }
-}
-
-function showStatus(message, type) {
-  const el = document.getElementById('status');
-  el.textContent = message;
-  el.className = type;
-  setTimeout(() => {
-    el.className = '';
-    el.style.display = 'none';
-  }, 5000);
-}
-
-async function refreshCookieStatus() {
-  let status;
-  try {
-    const res = await fetch(`${backendUrl}/api/cookies/status`);
-    status = await res.json();
-  } catch {
-    return;
-  }
-  for (const [platform, loaded] of Object.entries(status)) {
-    const statusEl = document.getElementById(`cookie-${platform}-status`);
-    if (!statusEl) continue;
-    if (loaded) {
-      statusEl.textContent = 'Loaded';
-      statusEl.className = 'cookie-status loaded';
-    } else {
-      statusEl.textContent = 'Not loaded';
-      statusEl.className = 'cookie-status not-loaded';
-    }
-  }
-}
-
-async function importCookies(platform) {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.txt';
-  input.addEventListener('change', async () => {
-    const file = input.files[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('platform', platform);
-    formData.append('file', file);
-    try {
-      const res = await fetch(`${backendUrl}/api/cookies/import`, { method: 'POST', body: formData });
-      if (res.ok) {
-        showStatus(`${platform} cookies imported!`, 'success');
-        await refreshCookieStatus();
-      } else {
-        const err = await res.json();
-        showStatus(`Import failed: ${err.detail || 'unknown error'}`, 'error');
-      }
-    } catch (err) {
-      showStatus(`Import failed: ${err}`, 'error');
-    }
+  chrome.storage.sync.set({ autoUpdate }, () => {
+    showStatus('Settings saved.');
   });
-  input.click();
-}
+});
 
-async function clearCookies(platform) {
-  const formData = new FormData();
-  formData.append('platform', platform);
-  try {
-    const res = await fetch(`${backendUrl}/api/cookies/clear`, { method: 'POST', body: formData });
-    if (res.ok) {
-      showStatus(`${platform} cookies cleared`, 'success');
-      await refreshCookieStatus();
-    }
-  } catch (err) {
-    showStatus(`Failed to clear: ${err}`, 'error');
-  }
-}
-
-function checkForUpdates() {
-  const btn = document.getElementById('check-updates-btn');
-  const statusEl = document.getElementById('update-status');
+document.getElementById('check-now-btn').addEventListener('click', () => {
+  const btn = document.getElementById('check-now-btn');
   btn.disabled = true;
   btn.textContent = 'Checking...';
-  statusEl.textContent = '';
-  statusEl.className = 'update-status';
 
   chrome.runtime.sendMessage({ action: 'checkForUpdates' }, (res) => {
     btn.disabled = false;
-    btn.textContent = 'Check for Updates Now';
+    btn.textContent = 'Check Now';
 
     if (!res) {
-      statusEl.textContent = 'Could not reach background service.';
-      statusEl.className = 'update-status error';
+      showStatus('No response from background worker.');
       return;
     }
-
     if (res.error) {
-      statusEl.textContent = res.error;
-      statusEl.className = 'update-status error';
-    } else if (res.reason === 'cooldown') {
-      statusEl.textContent = 'Already checked today. Try again later.';
-      statusEl.className = 'update-status';
+      showStatus(res.error, true);
     } else if (res.updateAvailable) {
-      statusEl.textContent = `v${res.version} available! Check chrome://extensions to reload.`;
-      statusEl.className = 'update-status success';
+      showStatus(`Update available: v${res.version}. Check the notification for download link.`);
     } else {
-      statusEl.textContent = 'You are on the latest version.';
-      statusEl.className = 'update-status success';
+      showStatus('You are on the latest version.');
     }
   });
+});
+
+function showStatus(message, isError = false) {
+  const el = document.getElementById('status');
+  el.textContent = message;
+  el.className = isError ? 'status error' : 'status';
+  setTimeout(() => { el.textContent = ''; el.className = 'status'; }, 4000);
 }
