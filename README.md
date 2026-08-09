@@ -1,50 +1,43 @@
-# Xyrus' Plucker
+﻿# Video Plucker — Chrome Extension
 
-A Chrome extension for downloading videos from **YouTube**, **X (Twitter)**, **TikTok**, and more — backed by `yt-dlp`.
+Send videos from YouTube, X (Twitter), TikTok to the [Video Plucker Desktop](https://github.com/XyrusCode/video-plucker/releases/latest) app.
 
-## Quick Start
+## How it works
 
-### 1. Start the backend
+1. Install from [Releases](https://github.com/XyrusCode/video-plucker-extension/releases/latest) — Load unpacked in `chrome://extensions` (Developer mode on), select the repo root.
+2. Run **Video Plucker Desktop** — it listens on `localhost:19877`.
+3. Browse a supported video page, click the floating **🪶 Pluck** button, then hit **Send to Desktop App** in the popup. Or right-click a link → Send to Video Plucker.
+4. Desktop app handles the download.
 
-```powershell
-cd backend
-.\run.ps1          # starts API at http://localhost:8000
+## Supported sites
+
+- YouTube (`youtube.com`, `youtu.be`)
+- X / Twitter (`twitter.com`, `x.com`)
+- TikTok (`tiktok.com`)
+
+## Settings
+
+Right-click the extension icon → **Options**:
+- **Auto-update** — Checks GitHub Releases daily. Disable for manual updates.
+- **Check Now** — Manually check for a new version.
+
+## Development
+
+```bash
+git clone https://github.com/XyrusCode/video-plucker-extension.git
+cd video-plucker-extension
+# Load in Chrome:
+#   chrome://extensions → Developer mode ON → Load unpacked → select this directory
 ```
-
-### 2. Load the extension
-
-1. Open `chrome://extensions`
-2. Enable **Developer mode** (top right)
-3. Click **Load unpacked** → select the `extension/` folder
-
-### 3. Pluck a video
-
-- Click the **🪶 Pluck** button floating on any supported video page, or
-- Right-click a video link → **Pluck This Video**, or
-- Paste a URL directly into the popup
-
-### 4. (Optional) Import cookies
-
-Export cookies.txt from your browser (use a "Get cookies.txt" extension), then import per platform in the extension popup or options page to bypass login walls and bot checks.
-
-## Features
-
-| Feature | Description |
-|---|---|
-| **Multi-site** | YouTube, X (Twitter), TikTok — `yt-dlp` handles 1000+ sites |
-| **Cookie Manager** | Import/clear per-platform cookies.txt |
-| **Browser cookies** | Use Chrome/Edge/Firefox login cookies via `--cookies-from-browser` |
-| **Playlists** | Download entire playlists individually or as a zip |
-| **Quality selection** | 360p → 4K, audio-only MP3/M4A |
-| **Context menu** | Right-click any video link to pluck instantly |
-| **Auto-release** | GitHub Actions packages extension + backend on version bump |
 
 ## Release
 
-Bump `version` in `extension/manifest.json`, push to `main` — the [release workflow](.github/workflows/release.yml) auto-builds and publishes.
+Bump `version` in `manifest.json` and push to `main`. The [workflow](.github/workflows/release.yml) packages a zip and publishes a GitHub Release.
 
-## Tech Stack
+## Repos
 
-- **Extension**: Chrome MV3 (vanilla JS)
-- **Backend**: Python FastAPI + `yt-dlp` + `ffmpeg`
-- **Desktop companion**: [Tauri/Rust app](https://github.com/XyrusCode/Xyrus-YT-Plucker-Desktop)
+| App | Repo |
+|-----|------|
+| Desktop | [video-plucker](https://github.com/XyrusCode/video-plucker) |
+| Extension | [video-plucker-extension](https://github.com/XyrusCode/video-plucker-extension) |
+| Android | [video-plucker-android](https://github.com/XyrusCode/video-plucker-android) |

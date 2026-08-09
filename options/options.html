@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Video Plucker</h1>
+      <p class="subtitle">Chrome Extension — Settings</p>
+    </header>
+
+    <section class="card" id="updates-section">
+      <h2>Updates</h2>
+      <div class="setting-row">
+        <label class="toggle-label">
+          <input type="checkbox" id="auto-update" checked />
+          Automatically check for updates
+        </label>
+      </div>
+      <div class="setting-row">
+        <button id="check-now-btn">Check Now</button>
+      </div>
+    </section>
+
+    <section class="card" id="about-section">
+      <h2>About</h2>
+      <p>Video Plucker sends video URLs from your browser to the desktop app, which handles downloading via yt-dlp.</p>
+      <p>This extension requires the <strong>Video Plucker Desktop</strong> app to be running.</p>
+      <p class="links">
+        <a href="https://github.com/XyrusCode/video-plucker/releases/latest" target="_blank">Desktop App Downloads</a>
+        &bull;
+        <a href="https://github.com/XyrusCode/video-plucker-extension/releases/latest" target="_blank">Extension Releases</a>
+      </p>
+    </section>
+
+    <p id="status" class="status"></p>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

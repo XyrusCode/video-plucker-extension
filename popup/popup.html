@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Video Plucker</h1>
+      <span id="desktop-dot" class="status-offline" title="Desktop app status"></span>
+    </header>
+
+    <div id="url-section">
+      <input type="text" id="url-input" placeholder="Video URL appears here..." />
+      <button id="send-btn">
+        <span class="btn-icon">📤</span> Send to Desktop App
+      </button>
+      <p id="send-status" class="send-status"></p>
+    </div>
+
+    <div class="info-section">
+      <p class="info-text">
+        This extension sends videos to the <strong>Video Plucker</strong> desktop app.
+        Make sure the desktop app is running. Download it from
+        <a href="https://github.com/XyrusCode/video-plucker/releases/latest" target="_blank">GitHub Releases</a>.
+      </p>
+    </div>
+
+    <div id="terms-reminder" class="chrome-section hidden">
+      <div class="reminder-row">
+        <span class="reminder-icon">📄</span>
+        <span>Please review and accept the <a href="#" id="terms-link">Terms of Use</a>.</span>
+      </div>
+    </div>
+
+    <div id="update-indicator" class="chrome-section hidden">
+      <div class="reminder-row">
+        <span class="reminder-icon">🔄</span>
+        <span>Update available: <a href="#" id="update-link">v<span id="update-version"></span></a></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

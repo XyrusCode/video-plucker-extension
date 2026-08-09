@@ -11,7 +11,7 @@ on:
     branches:
       - main
     paths:
-      - extension/manifest.json
+      - manifest.json
   workflow_dispatch:
 
 permissions:
@@ -32,7 +32,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version=$(jq -r '.version' extension/manifest.json)
+          version=$(jq -r '.version' manifest.json)
           echo "version=$version" >> "$GITHUB_OUTPUT"
           if gh release view "v$version" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "release=false" >> "$GITHUB_OUTPUT"
@@ -54,34 +54,25 @@ jobs:
       - name: Package extension
         run: |
           mkdir -p dist
-          cd extension
-          zip -r ../dist/plucker-extension-v${{ needs.check.outputs.version }}.zip . \
-            -x "*.git*" -x "*.DS_Store"
-
-      - name: Package backend
-        run: |
-          cd backend
-          zip -r ../dist/plucker-backend-v${{ needs.check.outputs.version }}.zip . \
-            -x "venv/*" -x "__pycache__/*" -x "*.pyc" -x ".git/*"
+          zip -r dist/plucker-extension-v${{ needs.check.outputs.version }}.zip . \
+            -x ".git/*" -x ".github/*" -x ".gitignore" -x "*.DS_Store" -x "dist/*"
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.check.outputs.version }}
-          name: "Xyrus' Plucker v${{ needs.check.outputs.version }}"
+          name: "Video Plucker Extension v${{ needs.check.outputs.version }}"
           body: |
-            ## Xyrus' Plucker v${{ needs.check.outputs.version }}
+            ## Video Plucker Extension v${{ needs.check.outputs.version }}
 
-            Download videos from YouTube, X (Twitter), TikTok, and more.
+            Send videos from YouTube, X (Twitter), TikTok, and more to the Video Plucker desktop app.
 
             ### 📦 Extension
-            - `plucker-extension-*.zip` — Load unpacked in Chrome via chrome://extensions
+            - `plucker-extension-*.zip` — Load unpacked in Chrome via chrome://extensions (Developer mode enabled)
             - Or publish to the Chrome Web Store from this zip
 
-            ### 🐍 Backend (optional)
-            - `plucker-backend-*.zip` — Python FastAPI server (requires Python 3.8+)
-            - Install: `pip install -r requirements.txt`
-            - Run: `uvicorn main:app --host 0.0.0.0 --port 8000`
+            ### 🔗 Requirements
+            - [Video Plucker Desktop](https://github.com/XyrusCode/video-plucker/releases/latest) must be running
 
             ### 🆕 What's new in this version
             See the commit history for details.
