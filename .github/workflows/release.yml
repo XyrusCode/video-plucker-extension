@@ -11,7 +11,7 @@ on:
     branches:
       - main
     paths:
-      - extension/manifest.json
+      - manifest.json
   workflow_dispatch:
 
 permissions:
@@ -32,7 +32,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version=$(jq -r '.version' extension/manifest.json)
+          version=$(jq -r '.version' manifest.json)
           echo "version=$version" >> "$GITHUB_OUTPUT"
           if gh release view "v$version" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "release=false" >> "$GITHUB_OUTPUT"
@@ -54,9 +54,8 @@ jobs:
       - name: Package extension
         run: |
           mkdir -p dist
-          cd extension
-          zip -r ../dist/plucker-extension-v${{ needs.check.outputs.version }}.zip . \
-            -x "*.git*" -x "*.DS_Store"
+          zip -r dist/plucker-extension-v${{ needs.check.outputs.version }}.zip . \
+            -x ".git/*" -x ".github/*" -x ".gitignore" -x "*.DS_Store" -x "dist/*"
 
       - name: Create release
         uses: softprops/action-gh-release@v2

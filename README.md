@@ -1,13 +1,13 @@
 ﻿# Video Plucker — Chrome Extension
 
-Send videos from supported sites (YouTube, X/Twitter, TikTok) to the [Video Plucker Desktop](https://github.com/XyrusCode/video-plucker/releases/latest) app for downloading.
+Send videos from YouTube, X (Twitter), TikTok to the [Video Plucker Desktop](https://github.com/XyrusCode/video-plucker/releases/latest) app.
 
 ## How it works
 
-1. Install the extension from the [latest release](https://github.com/XyrusCode/video-plucker-extension/releases/latest) (Load unpacked in `chrome://extensions` with Developer mode on).
-2. Run the **Video Plucker Desktop** app — it exposes a local server on `localhost:19877`.
-3. Browse to a supported video page, click the floating **🪶 Pluck** button, then click the extension icon and hit **Send to Desktop App**.
-4. The desktop app handles the download via yt-dlp.
+1. Install from [Releases](https://github.com/XyrusCode/video-plucker-extension/releases/latest) — Load unpacked in `chrome://extensions` (Developer mode on), select the repo root.
+2. Run **Video Plucker Desktop** — it listens on `localhost:19877`.
+3. Browse a supported video page, click the floating **🪶 Pluck** button, then hit **Send to Desktop App** in the popup. Or right-click a link → Send to Video Plucker.
+4. Desktop app handles the download.
 
 ## Supported sites
 
@@ -17,31 +17,22 @@ Send videos from supported sites (YouTube, X/Twitter, TikTok) to the [Video Pluc
 
 ## Settings
 
-Right-click the extension icon → **Options**, or open `chrome://extensions`, find Video Plucker, and click **Details → Extension options**.
-
-- **Auto-update** — Checks GitHub Releases daily for new versions. Disable if you prefer manual updates.
-- **Check Now** — Manually check for an update.
-
-## Terms of Use
-
-Video Plucker is provided for personal use only. Respect platform terms of service, copyright, and content ownership. Included in the extension at `terms/terms.html`.
+Right-click the extension icon → **Options**:
+- **Auto-update** — Checks GitHub Releases daily. Disable for manual updates.
+- **Check Now** — Manually check for a new version.
 
 ## Development
 
 ```bash
-# Clone
 git clone https://github.com/XyrusCode/video-plucker-extension.git
 cd video-plucker-extension
-
-# Load in Chrome
-# 1. Open chrome://extensions
-# 2. Enable "Developer mode" (top right)
-# 3. Click "Load unpacked" and select the extension/ folder
+# Load in Chrome:
+#   chrome://extensions → Developer mode ON → Load unpacked → select this directory
 ```
 
 ## Release
 
-Bump `version` in `extension/manifest.json` and push to `main`. The [release workflow](.github/workflows/release.yml) builds a zip and publishes a GitHub Release.
+Bump `version` in `manifest.json` and push to `main`. The [workflow](.github/workflows/release.yml) packages a zip and publishes a GitHub Release.
 
 ## Repos
 
