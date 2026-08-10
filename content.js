@@ -17,17 +17,12 @@
   btn.title = 'Send this video to Video Plucker desktop app';
 
   btn.addEventListener('click', () => {
-    const isPlaylist =
-      (host.includes('youtube') &&
-        (window.location.href.includes('playlist') ||
-          window.location.href.includes('&list=')));
-
-    chrome.storage.local.set(
-      { pluckContextUrl: window.location.href, pluckContextIsPlaylist: isPlaylist },
+    chrome.runtime.sendMessage(
+      { action: 'sendToDesktop', url: window.location.href },
       () => {
         const toast = document.createElement('div');
         toast.id = 'video-plucker-toast';
-        toast.textContent = 'Ready! Click the Video Plucker icon to send to desktop app.';
+        toast.textContent = 'Sent! Video Plucker desktop app is opening.';
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
       }

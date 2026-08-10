@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('url-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleSendToDesktop();
   });
+  document.getElementById('export-cookies-btn').addEventListener('click', handleExportCookies);
 
   document.getElementById('terms-link').addEventListener('click', (e) => {
     e.preventDefault();
@@ -61,6 +62,29 @@ async function handleSendToDesktop() {
       status.textContent = 'Sent!';
       status.className = 'send-status success';
       setTimeout(() => { status.textContent = ''; status.className = 'send-status'; }, 3000);
+    }
+  });
+}
+
+// ── Cookie export ───────────────────────────────────────────────────
+
+function handleExportCookies() {
+  const url = document.getElementById('url-input').value.trim();
+  const status = document.getElementById('export-status');
+  if (!url) {
+    status.textContent = 'Paste a video URL first.';
+    status.className = 'send-status error';
+    return;
+  }
+  status.textContent = 'Exporting…';
+  status.className = 'send-status';
+  chrome.runtime.sendMessage({ action: 'exportCookies', url }, (res) => {
+    if (res && res.ok) {
+      status.textContent = `Saved ${res.count} cookies for ${res.site} to Downloads. Import it in the desktop Cookie Manager.`;
+      status.className = 'send-status success';
+    } else {
+      status.textContent = (res && res.error) ? res.error : 'Export failed.';
+      status.className = 'send-status error';
     }
   });
 }

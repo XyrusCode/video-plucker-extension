@@ -37,6 +37,13 @@ chrome.runtime.onInstalled.addListener(() => {
     });
   }
 
+  chrome.contextMenus.create({
+    id: 'export-cookies',
+    title: 'Export cookies.txt for this site',
+    contexts: ['link', 'page'],
+    documentUrlPatterns: SITE_PATTERNS,
+  });
+
   // Open Terms of Use on first install
   chrome.tabs.create({ url: chrome.runtime.getURL('terms/terms.html') });
 
@@ -45,6 +52,20 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener((info) => {
+  if (info.menuItemId === 'export-cookies') {
+    const url = info.linkUrl || info.pageUrl;
+    exportCookiesForUrl(url).then((res) => {
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon48.png',
+        title: res.ok ? 'Cookies Exported' : 'Cookie Export Failed',
+        message: res.ok
+          ? `Saved ${res.count} cookies for ${res.site} to Downloads. Import the file in the desktop app's Cookie Manager.`
+          : res.error || 'Could not export cookies.',
+      });
+    });
+    return;
+  }
   const url = info.linkUrl || info.pageUrl;
   sendToDesktop(url);
 });
@@ -59,6 +80,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.action === 'sendToDesktop') {
     sendToDesktop(message.url).then(() => sendResponse({ ok: true }));
+    return true;
+  }
+
+  if (message.action === 'exportCookies') {
+    exportCookiesForUrl(message.url).then(sendResponse);
     return true;
   }
 
@@ -97,26 +123,103 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // ── Desktop pairing ─────────────────────────────────────────────────
 
+function buildProtocolUrl(url) {
+  const encoded = encodeURIComponent(url).replace(/'/g, '%27');
+  return `yt-plucker://analyze?url=${encoded}`;
+}
+
 async function sendToDesktop(url) {
+  // Chrome blocks chrome.tabs.create with custom schemes, so the protocol
+  // URL is launched via a data: URL redirect (see
+  // Video-Plucker-Desktop/docs/EXTENSION_DESKTOP_INTEGRATION.md).
+  const protocolUrl = buildProtocolUrl(url);
+  const dataUrl = `data:text/html;charset=utf-8,<script>location.href='${protocolUrl}'</script>`;
   try {
-    await fetch(`${DESKTOP_PAIRING_URL}/pair`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
-    });
+    await chrome.tabs.create({ url: dataUrl });
     chrome.notifications.create({
       type: 'basic',
       iconUrl: 'icons/icon48.png',
       title: 'Sent to Desktop',
-      message: 'URL sent to Video Plucker desktop app.',
+      message: 'Video sent to Video Plucker desktop app.',
     });
   } catch {
     chrome.notifications.create({
       type: 'basic',
       iconUrl: 'icons/icon48.png',
       title: 'Desktop App Not Found',
-      message: 'Make sure Video Plucker desktop app is running.',
+      message: 'Make sure Video Plucker desktop app is installed and running.',
     });
+  }
+}
+
+// ── Cookie export ───────────────────────────────────────────────────
+
+const SITE_COOKIE_DOMAINS = {
+  youtube: ['youtube.com', 'youtu.be'],
+  twitter: ['twitter.com', 'x.com'],
+  tiktok: ['tiktok.com'],
+};
+
+function siteForUrl(url) {
+  let host;
+  try {
+    host = new URL(url).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+  for (const [site, domains] of Object.entries(SITE_COOKIE_DOMAINS)) {
+    if (domains.some((d) => host === d || host.endsWith(`.${d}`))) return site;
+  }
+  return null;
+}
+
+// One Netscape cookies.txt line: domain, includeSubdomains, path, secure,
+// expiry (epoch seconds, 0 = session), name, value. Values never contain
+// tabs (per RFC 6265 they exclude control chars), so this round-trips
+// through yt-dlp's cookiejar.
+function cookieToTokenLine(c) {
+  const includeSubdomains = c.domain.startsWith('.') ? 'TRUE' : 'FALSE';
+  const secure = c.secure ? 'TRUE' : 'FALSE';
+  const expiry = c.expirationDate ? Math.floor(c.expirationDate) : 0;
+  return [c.domain, includeSubdomains, c.path, secure, expiry, c.name, c.value].join('\t');
+}
+
+async function exportCookiesForUrl(url) {
+  const site = siteForUrl(url);
+  if (!site) return { ok: false, error: `Unsupported site: ${url}` };
+
+  const seen = new Set();
+  const lines = [];
+  for (const domain of SITE_COOKIE_DOMAINS[site]) {
+    const cookies = await chrome.cookies.getAll({ domain });
+    for (const c of cookies) {
+      const key = `${c.domain}|${c.name}|${c.path}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      lines.push(cookieToTokenLine(c));
+    }
+  }
+  lines.sort();
+
+  const body = [
+    '# Netscape HTTP Cookie File',
+    `# Exported by Video Plucker for ${site} on ${new Date().toISOString()}`,
+    "# Import in the desktop app: Settings -> Cookie Manager -> Import cookies.txt",
+    '',
+    ...lines,
+    '',
+  ].join('\n');
+
+  const blob = new Blob([body], { type: 'text/plain' });
+  const blobUrl = URL.createObjectURL(blob);
+  try {
+    const downloadId = await chrome.downloads.download({
+      url: blobUrl,
+      filename: `video-plucker-${site}-cookies.txt`,
+    });
+    return { ok: true, site, count: lines.length, downloadId };
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
   }
 }
 
