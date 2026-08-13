@@ -9,5 +9,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Links to the XyrusCode software catalogue and to the Discord community, in the
-  popup and on the options page.
+- Links to the XyrusCode software catalogue and to the Discord community, in the popup and on the options page.
+
+### Changed
+- Queue now optional: users can toggle queue on/off in Settings → Experimental features
+- 4-tab structure: Download, Queue, History, Settings (Browser optional 5th tab)
+- Download button shows "Add to Queue" or "Download" based on queue setting
