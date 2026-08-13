@@ -57,6 +57,27 @@ jobs:
           zip -r dist/plucker-extension-v${{ needs.check.outputs.version }}.zip . \
             -x ".git/*" -x ".github/*" -x ".gitignore" -x "*.DS_Store" -x "dist/*"
 
+      - name: Extract release notes
+        id: notes
+        run: |
+          version="${{ needs.check.outputs.version }}"
+          notes=$(awk -v v="$version" '
+            BEGIN { found = 0 }
+            /^## \[/ {
+              if (found) exit
+              if ($0 ~ ("^## \\[" v "\\]")) { found = 1; next }
+            }
+            found { print }
+          ' CHANGELOG.md)
+          if [ -z "$notes" ]; then
+            notes="See the commit history for details."
+          fi
+          {
+            echo 'notes<<EOF'
+            echo "$notes"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
@@ -75,7 +96,7 @@ jobs:
             - [Video Plucker Desktop](https://github.com/XyrusCode/video-plucker/releases/latest) must be running
 
             ### 🆕 What's new in this version
-            See the commit history for details.
+            ${{ steps.notes.outputs.notes }}
           files: dist/*.zip
           draft: false
           prerelease: false
